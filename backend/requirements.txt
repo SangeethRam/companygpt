@@ -1,0 +1,11 @@
+langchain
+langchain-community
+langchain-ollama
+langchain_anthropic
+mcp
+mcp_use
+FastAPI
+sentence-transformers
+pypdf
+chromadb
+fastembed

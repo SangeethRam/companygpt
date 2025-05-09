@@ -1,0 +1,26 @@
+{
+    "servers": {
+         "Docingestor": {
+                "type": "stdio",
+                "command": "cmd.exe",
+                "args": [
+                    "/C",
+                    "C:\\Sangeeth\\projects\\companygpt\\.venv\\Scripts\\activate.bat",
+                    "&&",
+                    "python",
+                    "C:\\Sangeeth\\projects\\companygpt\\backend\\mcp-servers\\docingestor.py"
+                ]
+            },
+            "saymyname": {
+                "type": "stdio",
+                "command": "cmd.exe",
+                "args": [
+                    "/C",
+                    "C:\\Sangeeth\\projects\\companygpt\\.venv\\Scripts\\activate.bat",
+                    "&&",
+                    "python",
+                    "C:\\Sangeeth\\projects\\companygpt\\backend\\mcp-servers\\saymyname.py"
+                ]
+            }
+    }
+}
