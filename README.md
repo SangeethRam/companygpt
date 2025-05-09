@@ -10,7 +10,7 @@ CompanyGPT is a project that integrates a backend and frontend to provide a seam
 Use the following command to clone the repository:
 
 ```bash
-git clone https://github.com/your-username/companygpt.git
+git clone https://github.com/SangeethRam/companygpt.git
 ```
 
 ### 2. Navigate to the Project Directory
