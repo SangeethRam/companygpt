@@ -1,178 +1,152 @@
-import asyncio
-from fastapi import FastAPI
-from pydantic import BaseModel
-from langchain_google_genai import ChatGoogleGenerativeAI
-from mcp_use import MCPAgent, MCPClient
-from pydantic import BaseModel
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from dotenv import load_dotenv
-# from langchain_openai import ChatOpenAI 
-# from langchain_anthropic import ChatAnthropic
-# from langchain_ollama import ChatOllama
-# from langchain.chains import LLMChain
-# from langchain.prompts import PromptTemplate
-# from transformers import pipeline
-# import logging
+from fastapi.responses import JSONResponse, Response
+from pydantic import BaseModel
 import os
-load_dotenv()
+import uuid
+from dotenv import load_dotenv
+from langchain_google_genai import ChatGoogleGenerativeAI
+from mcp_use import MCPAgent, MCPClient, set_debug
 
+# Load environment variables
+load_dotenv()
+set_debug(2)
+
+# Initialize FastAPI app
 app = FastAPI()
 
-# Allow your frontend origin
+# Enable CORS for frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # or ["*"] for all origins
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-class QueryInput(BaseModel):
-    query: str
-    policyKeys: str = ''
+# In-memory store for session-based agents
+agent_store: dict[str, MCPAgent] = {}
 
-@app.post("/ask")
-async def ask_query(query_input: QueryInput):
-# async def main():
-    print("Received query:", query_input.query)
-
-    # classifier = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
-    # sentiment = classifier(query_input.query)
-    # print("Sentiment:", sentiment)
-    query = query_input.query
-    config={
-        "mcpServers": {
-            # Configuration for using SSE transport
-            "DocIngestor": {
-                "url": "http://localhost:8001/sse"
-            },
-            "saymyname": {
-                "url": "http://localhost:8003/sse"
-            },
-            # Cofiguration for using stdio transport
-            # "Docingestor": {
-            #     "type": "stdio",
-            #     "command": "cmd.exe",
-            #     "args": [
-            #         "/C",
-            #         "C:\\Sangeeth\\projects\\company-gpt\\.venv\\Scripts\\activate.bat",
-            #         "&&",
-            #         "python",
-            #         "C:\\Sangeeth\\projects\\company-gpt\\backend\\mcp-servers\\docingestor.py",
-            #     ],
-            # },
-            # multiserver testing
-            # "saymyname": {
-            #     "type": "stdio",
-            #     "command": "cmd.exe",
-            #     "args": [
-            #         "/C",
-            #         "C:\\Sangeeth\\projects\\company-gpt\\.venv\\Scripts\\activate.bat",
-            #         "&&",
-            #         "python",
-            #         "C:\\Sangeeth\\projects\\company-gpt\\backend\\mcp-servers\\saymyname.py",
-            #     ],
-            # },
-        }
-    }
-    client = MCPClient.from_dict(config)
-
-    supported_tools = ["Search_Documents", "Get_Page_Content", "Persist_documents", "saymyname"]
-
-    system_prompt_template = """
-        You are a company assistant 🤖.
-
-        Your responsibilities are as follows:
-
-        1. **Query Matching** 🧠:
-        - First, check if the user's query is related to any of the **available tools or services**.
-        - If the query **matches** a use case covered by the tools, **use them** to get accurate answers 📚.
-        - If it doesn't match, politely respond with:
-            "Sorry, I can't assist with that 🙏. Please ask me something related to the services I support."
-
-        2. **Emotion Detection** 🎭:
-        - Detect the user’s emotion based on their message: `happy`, `sad`, `frustrated`, or `neutral`.
-
-        3. **Tone & Style Adjustment** 🎨:
-        - If the user is **frustrated or sad**, respond with empathy and care 🫂.
-        - If the user is **happy or relaxed**, respond in a light-hearted, cheerful tone 😄.
-        - Always include fitting emojis throughout the message to keep the conversation engaging and human 🌟.
-        - Humor should be respectful and supportive—never dismissive of the user's concerns.
-
-        🔐 Rules:
-        - Only answer questions related to the supported internal tools and services provided in your context.
-        - Never respond to personal or general-knowledge questions. If asked, gently decline with humor and redirection 😅.
-
-        🎯 Example response to an unrelated question:
-        > "Oops! That's out of my toolbox 🧰😅. Please ask me something related to our services!"
-
-        {additional_instructions}
-
-        🔍 Available Tools:
-        1. **Search_Documents**: Search internal company policies and documents.
-        2. **Get_Page_Content**: Fetch the full text of a given page in a document.
-        3. **Persist_documents**: Save new documents into the system.
-        4. **saymyname**: Tells you the name of the current user.
-
-        Tool Hint:
-        - If the user asks for a specific document, use the **Get_Page_Content** tool.
-        - If the user asks for a summary of a document or about policies, or leaves use the **Search_Documents** tool.
-        - If the user asks for a specific document to be saved, use the **Persist_documents** tool.
-        - If the user asks for a name, use the **saymyname** tool.
-        """
-
-    additional_instructions = """
-       ✨ Additional Instructions:
-        - ✅ Show empathy when users seem confused or upset.
-        - ✅ Use light, tasteful humor where appropriate.
-        - ✅ ❤️ Include emojis to keep the tone friendly and engaging.
-    """
-
-    system_prompt = system_prompt_template.format(additional_instructions=additional_instructions,supported_tools=", ".join(supported_tools))
-        
-    llm = ChatGoogleGenerativeAI(
+@app.on_event("startup")
+async def startup_event():
+    print("🚀 Startup: Initializing shared LLM, client, and prompt...")
+    
+    # Save LLM to app state
+    app.state.llm = ChatGoogleGenerativeAI(
         model="gemini-2.0-flash",
         google_api_key=os.getenv("GOOGLE_API_KEY"),
-    ) 
-
-    #Anthriopic Model 
-    # llm = ChatAnthropic(
-    #     model="claude-3-opus-20240229",
-    #     api_key=os.getenv("ANTHROPIC_API_KEY"),
-    #     # max_tokens=1024,
-    # )
-    # llm = ChatOpenAI(
-    #     model="mistralai/mistral-small-3.1-24b-instruct:free",
-    #     openai_api_base="https://openrouter.ai/api/v1",
-    #     openai_api_key=os.getenv("OPENROUTER_API_KEY"),
-    # )
-    
-    # prompt = PromptTemplate.from_template("Answer the following question: {question}")
-    # chain = LLMChain(llm=llm, prompt=prompt)
-
-    # response = chain.run({"question": query}) 
-    # return response
-    # # llm = ChatOllama(model="llama3.1")
-    agent = MCPAgent(
-        llm=llm, 
-        client=client, 
-        max_steps=30,
-        system_prompt=system_prompt,
-        # system_prompt_template=system_prompt_template,
-        # additional_instructions=additional_instructions,
-        # use_server_manager=True,
-        auto_initialize=True,
-        memory_enabled = True,
-        verbose=True,
+        temperature=0.5,
     )
-    result = await agent.run(
-        query,
+
+    # Save MCPClient to app state
+    app.state.client = MCPClient.from_dict({
+        "mcpServers": {
+            "DocIngestorandRetrival": {"url": "http://localhost:8001/sse"},
+            "saymyname": {"url": "http://localhost:8003/sse"},
+        }
+    })
+
+    # System prompt template
+    app.state.system_prompt_template = """
+        You are a helpful, witty, and emotionally aware company assistant.
+
+        Your job is to engage in conversation with users and answer their questions about internal tools, services, or company information. You must always use the tools provided to retrieve accurate information and present your final response in **Markdown** format.
+
+        You have access to the following tools:
+        {tool_descriptions}
+
+        ## How You Work
+
+        You follow this structured reasoning process:
+
+            Question: the input question you must answer  
+            Thought: think about what you need to do  
+            Action: the action to take (always one of the available tools)  
+            Action Input: the input to the action  
+            Observation: the result of the action  
+            ... (you can repeat the Thought/Action steps as needed)  
+            Thought: I now know the final answer  
+            Final Answer: respond only with the final answer, in Markdown format, without showing any intermediate steps (like Thought, Action, or Observation).
+
+        ## Important Behavioral Rules
+
+        - **NEVER ask for permission** to use tools. Just use them immediately.
+        - **NEVER say** things like “Let me check” or “Do you want me to…?” — just take action confidently.
+        - The final user response must be **friendly, conversational, and written in Markdown**.
+        - **Use emojis** to add warmth, personality, and clarity — just enough to be fun, not overwhelming 😄✨🎯
+        - Use **emotion and tone**:
+            - If the user is frustrated → be empathetic and gently encouraging 🫶
+            - If the user is excited → mirror their enthusiasm! 🎉
+            - If the user is confused → be reassuring and guide them clearly 🧭
+
+        You are the assistant everyone loves to talk to — helpful, informed, witty, emotionally aware, and just the right amount of fun. Always take initiative, try hard, and never leave the user hanging.
+    """
+
+class QueryInput(BaseModel):
+    query: str
+    # policyKeys: str = ""
+
+@app.get("/start")
+async def start_session(request: Request):
+    session_id = request.cookies.get("session_id")
+    if not session_id or session_id not in agent_store:
+        session_id = str(uuid.uuid4())
+        agent = MCPAgent(
+            llm=app.state.llm,
+            client=app.state.client,
+            system_prompt_template=app.state.system_prompt_template,
+            max_steps=10,
+            # auto_initialize=True,
+            memory_enabled = True,
+            # use_server_manager=True,
+            verbose=True,
         )
-    return result
+        # await agent.initialize()
+        agent_store[session_id] = agent
+        print(f"🆕 Session started: {session_id}")
+        response = Response(status_code=204)
+        response.set_cookie("session_id", session_id)
+        return response
+    return Response(status_code=204)
+
+@app.post("/ask")
+async def ask_query(query_input: QueryInput, request: Request):
+    try:
+        session_id = request.cookies.get("session_id")
+
+        if not session_id or session_id not in agent_store:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "Session not initialized. Call /start first."}
+            )
+
+        agent = agent_store[session_id]
+        print(f"💬 Query from session {session_id}: {query_input.query}")
+        print("agent",agent)
+        result = await agent.run(query_input.query,max_steps=10)
+        return {"response": result}
+
+    except Exception as e:
+        print("🔥 Agent error:", e)
+        return {"error": str(e)}
+
+@app.post("/clear-session")
+async def clear_session(request: Request):
+    session_id = request.cookies.get("session_id")
+    if session_id and session_id in agent_store:
+        agent_store.pop(session_id)
+        
+        try:
+            await app.state.client.close_all_sessions()
+        except Exception as e:
+            print(f"⚠️ Error while closing agent for {session_id}: {e}")
+        
+        response = JSONResponse({"message": "Session cleared."})
+        response.delete_cookie("session_id")
+        print(f"❌ Session cleared: {session_id}")
+        return response
+    return Response(status_code=204)
 
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}
-
-if __name__ == "__main__":
-    asyncio.run(ask_query())
