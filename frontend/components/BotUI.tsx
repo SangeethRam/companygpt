@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from 'react';
 import Draggable from 'react-draggable';
 import { FiMessageSquare, FiMaximize, FiMinimize } from 'react-icons/fi';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 export default function BotUI() {
   const [open, setOpen] = useState(false);
@@ -12,7 +14,7 @@ export default function BotUI() {
   const [messages, setMessages] = useState<{ text: string; isUser: boolean }[]>([]);
   const [messageInput, setMessageInput] = useState('');
   const [isThinking, setIsThinking] = useState(false);
-  
+  const [hasStarted, setHasStarted] = useState(false);
 
   const panelRef = useRef<HTMLDivElement>(null);
   const botButtonRef = useRef<HTMLButtonElement>(null);
@@ -30,7 +32,29 @@ export default function BotUI() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const togglePanel = () => {
+  useEffect(() => {
+    const container = document.getElementById('messages-container');
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    }
+  }, [messages]);
+
+  useEffect(() => {
+    const clearSession = async () => {
+      try {
+        await fetch("http://localhost:8000/clear-session", {
+          method: "POST",
+          credentials: "include",
+        });
+      } catch (err) {
+        console.error("Error clearing session on refresh", err);
+      }
+    };
+
+    clearSession();
+  }, []);
+
+  const togglePanel = async() => {
     if (open) {
       setOpen(false);
       setIsFullscreen(false);
@@ -45,6 +69,23 @@ export default function BotUI() {
         setPanelPosition({ x, y });
       }
       setOpen(true);
+
+      if (messages.length === 0) {
+         try {
+            await fetch("http://localhost:8000/start", {
+              method: "GET",
+              credentials: "include",
+            });
+          } catch (err) {
+            console.error("Failed to initialize session", err);
+          }
+        setMessages([
+          {
+            text: "Hello! 👋 I'm your O𝑰 assistant. Ask me anything related to our company, and I’ll do my best (with only minimal eye-rolling). Here are few Suggestions",
+            isUser: false,
+          },
+        ]);
+      }
     }
   };
 
@@ -71,8 +112,16 @@ export default function BotUI() {
     setPanelPosition({ x, y });
   };
 
+  const suggestions = [
+    "What are our core values?",
+    "Tell me something cool about our latest product.",
+    "Who's the CEO and what do they do?",
+    "How do I get tech support?",
+  ];
+
   const handleSendMessage = async () => {
     if (messageInput.trim() === '') return;
+    setHasStarted(true);
 
     setMessages((prevMessages) => [
       ...prevMessages,
@@ -81,20 +130,19 @@ export default function BotUI() {
     setMessageInput('');
     setIsThinking(true);
 
-    // Simulate AI response
-     try {
+    try {
       const res = await fetch('http://localhost:8000/ask', {
         method: 'POST',
+        credentials: "include",
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           query: messageInput,
-          // policyKeys: policyKeys.length > 0 ? policyKeys : undefined,
         }),
       });
       const data = await res.json();
       setMessages((prevMessages) => [
-      ...prevMessages,
-      { text: data, isUser: false },
+        ...prevMessages,
+        { text: data.response, isUser: false },
       ]);
     } catch {
       setMessages((prevMessages) => [
@@ -133,7 +181,7 @@ export default function BotUI() {
           handle=".handle"
           position={panelPosition}
           onDrag={onDrag}
-          nodeRef={panelRef  as React.RefObject<HTMLElement>}
+          nodeRef={panelRef as React.RefObject<HTMLElement>}
         >
           <div
             ref={panelRef}
@@ -170,7 +218,7 @@ export default function BotUI() {
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto px-4 pt-3 pb-24 space-y-2">
+              <div id="messages-container" className="flex-1 overflow-y-auto px-4 pt-3 pb-24 space-y-2">
                 {messages.map((message, index) => (
                   <div
                     key={index}
@@ -181,7 +229,7 @@ export default function BotUI() {
                         message.isUser ? 'bg-black text-white' : 'bg-gray-200 text-black'
                       }`}
                     >
-                      {message.text}
+                      <ReactMarkdown children={message.text} remarkPlugins={[remarkGfm]} />
                     </div>
                   </div>
                 ))}
@@ -193,7 +241,23 @@ export default function BotUI() {
                     </div>
                   </div>
                 )}
+                
+                {/* Suggestions */}
+                {!hasStarted && (
+                  <div className="w-full px-1 flex flex-wrap gap-2 mt-4">
+                    {suggestions.map((s, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setMessageInput(s)}
+                        className="text-xs font-mono text-gray-700 bg-white hover:bg-gray-100 px-3 py-1 rounded-full border border-gray-300 shadow-sm transition-all font-medium"
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
+
 
               <div className="absolute bottom-0 left-0 w-full bg-white border-t border-gray-200 px-4 py-3 flex justify-center items-center gap-2">
                 <input
@@ -203,7 +267,7 @@ export default function BotUI() {
                   onChange={handleInputChange}
                   onKeyDown={handleKeyPress}
                   disabled={isThinking}
-                  className="w-3/4 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black disabled:opacity-50"
+                  className="text-xs font-mono w-3/4 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black disabled:opacity-50"
                 />
                 <button
                   onClick={handleSendMessage}
@@ -257,3 +321,4 @@ export default function BotUI() {
     </main>
   );
 }
+

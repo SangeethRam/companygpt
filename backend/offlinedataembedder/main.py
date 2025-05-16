@@ -1,7 +1,8 @@
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.vectorstores import Chroma
-from langchain.embeddings import HuggingFaceEmbeddings
+# from langchain.embeddings import HuggingFaceEmbeddings
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 import os
 
 # Load documents
@@ -12,7 +13,11 @@ BASE_URL = os.path.dirname(os.path.abspath(__file__))
 BACKEND_DIR = os.path.abspath(os.path.join(BASE_URL, ".."))
 PERSIST_DIR = os.path.join(BACKEND_DIR, "data", "embeddings")
 DOCUMENTS_DIR = os.path.join(BACKEND_DIR, "documents", "Policies")
-EMBEDDING_MODEL = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL_NAME)
+# EMBEDDING_MODEL = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL_NAME)
+EMBEDDING_MODEL = GoogleGenerativeAIEmbeddings(
+    model="models/embedding-001",
+    google_api_key=os.getenv("GOOGLE_API_KEY")
+)
 
 for file in os.listdir(DOCUMENTS_DIR):
     if file.endswith(".pdf"):
