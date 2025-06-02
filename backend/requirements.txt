@@ -10,3 +10,4 @@ sentence-transformers
 pypdf
 chromadb
 fastembed
+playwright

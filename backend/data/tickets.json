@@ -1,0 +1,18 @@
+[
+  {
+    "id": "a9316f73",
+    "user": "sangeeth",
+    "issue": "laptop crash issue regarding broken screen",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2025-06-02T14:46:17.338872"
+  },
+  {
+    "id": "edc9bd63",
+    "user": "Sangeet Ramasamy",
+    "issue": "OS crashes repeatedly. Affected system: Sangeet Ramasamy's laptop.",
+    "priority": "critical",
+    "status": "open",
+    "created_at": "2025-06-02T18:09:52.307822"
+  }
+]

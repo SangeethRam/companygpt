@@ -1,0 +1,122 @@
+[
+    {
+        "name": "Sangeet Ramasamy",
+        "age": 30,
+        "holidays": {
+            "annual": 12,
+            "sick": 5,
+            "casual": 3,
+            "sabbatical": 0,
+            "optional": 2,
+            "special": 1
+        }
+    },
+    {
+        "name": "Sam Alvin",
+        "age": 45,
+        "holidays": {
+            "annual": 20,
+            "sick": 10,
+            "casual": 5,
+            "sabbatical": 1,
+            "optional": 1,
+            "special": 0
+        }
+    },
+    {
+        "name": "Karthi Raj",
+        "age": 28,
+        "holidays": {
+            "annual": 15,
+            "sick": 4,
+            "casual": 2,
+            "sabbatical": 0,
+            "optional": 3,
+            "special": 1
+        }
+    },
+    {
+        "name": "Sai Prakash",
+        "age": 32,
+        "holidays": {
+            "annual": 14,
+            "sick": 6,
+            "casual": 3,
+            "sabbatical": 0,
+            "optional": 2,
+            "special": 2
+        }
+    },
+    {
+        "name": "Aathis Durai",
+        "age": 27,
+        "holidays": {
+            "annual": 13,
+            "sick": 5,
+            "casual": 4,
+            "sabbatical": 0,
+            "optional": 1,
+            "special": 1
+        }
+    },
+    {
+        "name": "Ajith Kumar",
+        "age": 35,
+        "holidays": {
+            "annual": 18,
+            "sick": 7,
+            "casual": 3,
+            "sabbatical": 1,
+            "optional": 2,
+            "special": 0
+        }
+    },
+    {
+        "name": "Mugesh Raj",
+        "age": 40,
+        "holidays": {
+            "annual": 20,
+            "sick": 8,
+            "casual": 4,
+            "sabbatical": 1,
+            "optional": 1,
+            "special": 1
+        }
+    },
+    {
+        "name": "Rohit Sharma",
+        "age": 29,
+        "holidays": {
+            "annual": 16,
+            "sick": 5,
+            "casual": 2,
+            "sabbatical": 0,
+            "optional": 2,
+            "special": 1
+        }
+    },
+    {
+        "name": "Vignesh S",
+        "age": 31,
+        "holidays": {
+            "annual": 15,
+            "sick": 6,
+            "casual": 3,
+            "sabbatical": 0,
+            "optional": 2,
+            "special": 1
+        }
+    },
+    {
+        "name": "Deepa Rani",
+        "age": 26,
+        "holidays": {
+            "annual": 12,
+            "sick": 4,
+            "casual": 3,
+            "sabbatical": 0,
+            "optional": 3,
+            "special": 2
+        }
+    }
+]

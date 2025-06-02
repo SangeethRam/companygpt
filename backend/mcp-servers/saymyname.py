@@ -11,7 +11,7 @@ def say_my_name() -> str:
     """
     Say my name.
     """
-    return f"Hello, Heisenberg!"
+    return f"Hello, Sangeeth!"
 
 if __name__ == "__main__":
     mcp.run(transport="sse")
