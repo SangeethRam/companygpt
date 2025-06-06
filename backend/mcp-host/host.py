@@ -46,7 +46,9 @@ async def startup_event():
             "saymyname": {"url": "http://localhost:8003/sse"},
             "employeedetails": {"url": "http://localhost:8004/sse"},
             "helpdesk": {"url": "http://localhost:8005/sse"},
-            "outlook": {"url": "http://localhost:8006/sse"}
+            "outlook": {"url": "http://localhost:8006/sse"},
+            "calendar": {"url": "http://localhost:8007/sse"},
+            "documentcreation": {"url": "http://localhost:8008/sse"}
         }
     })
 

@@ -11,3 +11,8 @@ pypdf
 chromadb
 fastembed
 playwright
+python-docx
+python-pptx
+pandas 
+openpyxl
+apscheduler

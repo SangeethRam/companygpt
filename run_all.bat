@@ -33,6 +33,8 @@ start cmd %CMD_OPTS% "python backend\mcp-servers\saymyname.py"
 start cmd %CMD_OPTS% "python backend\mcp-servers\employeedetails.py"
 start cmd %CMD_OPTS% "python backend\mcp-servers\helpdesk.py"
 start cmd %CMD_OPTS% "python backend\mcp-servers\outlook.py"
+start cmd %CMD_OPTS% "python backend\mcp-servers\calender.py"
+start cmd %CMD_OPTS% "python backend\mcp-servers\docgeneration.py"
 
 REM Wait for servers to start a bit
 timeout /t 5 /nobreak >nul
