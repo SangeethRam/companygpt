@@ -3,10 +3,10 @@ services:
     name: mcp-host
     env: docker
     dockerContext: .
-    plan: free
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: SERVICE_NAME
-        value: "mcp-host"
+        value: mcp-host
       - key: PORT
         value: "8000"
 
@@ -14,10 +14,10 @@ services:
     name: docingestor
     env: docker
     dockerContext: .
-    plan: free
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: SERVICE_NAME
-        value: "docingestor"
+        value: docingestor
       - key: PORT
         value: "8001"
 
@@ -25,10 +25,10 @@ services:
     name: employeedetails
     env: docker
     dockerContext: .
-    plan: free
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: SERVICE_NAME
-        value: "employeedetails"
+        value: employeedetails
       - key: PORT
         value: "8004"
 
@@ -36,10 +36,10 @@ services:
     name: helpdesk
     env: docker
     dockerContext: .
-    plan: free
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: SERVICE_NAME
-        value: "helpdesk"
+        value: helpdesk
       - key: PORT
         value: "8005"
 
@@ -47,10 +47,10 @@ services:
     name: outlook
     env: docker
     dockerContext: .
-    plan: free
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: SERVICE_NAME
-        value: "outlook"
+        value: outlook
       - key: PORT
         value: "8006"
 
@@ -58,10 +58,10 @@ services:
     name: calendar
     env: docker
     dockerContext: .
-    plan: free
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: SERVICE_NAME
-        value: "calendar"
+        value: calendar
       - key: PORT
         value: "8007"
 
@@ -69,9 +69,9 @@ services:
     name: documentcreation
     env: docker
     dockerContext: .
-    plan: free
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: SERVICE_NAME
-        value: "documentcreation"
+        value: documentcreation
       - key: PORT
         value: "8008"
