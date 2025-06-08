@@ -13,6 +13,13 @@ from mcp_use import MCPAgent, MCPClient, set_debug
 load_dotenv(dotenv_path=Path(__file__).parent.parent / ".env")
 set_debug(2)
 
+MODE = os.getenv("MODE", "dev")
+
+def server_url(service_name: str, port: str, render_url: str):
+    if MODE == "dev":
+        return f"http://localhost:{port}/sse"
+    return f"https://{render_url}.onrender.com/sse"
+
 app = FastAPI()
 
 app.add_middleware(
@@ -29,32 +36,32 @@ session_clients: dict[str, MCPClient] = {}
 
 AGENTS = {
     "docingestor": {
-        "server": {"DocIngestorandRetrival": {"url": "http://localhost:8001/sse"}},
+        "server": {"DocIngestorandRetrival": {"url": server_url("docingestor", "8001", "docingestor")}},
         "description": "Handles document ingestion and retrieval tasks.",
         "system_prompt": "You're a document assistant. Ingest, search, and retrieve documents for the user.",
     },
     "employee": {
-        "server": {"employeedetails": {"url": "http://localhost:8004/sse"}},
+        "server": {"employeedetails": {"url": server_url("employee", "8004", "employee")}},
         "description": "Accesses employee details like leave, history, and org info.",
         "system_prompt": "You're an HR assistant. Help users with employee records and policy lookup.",
     },
     "helpdesk": {
-        "server": {"helpdesk": {"url": "http://localhost:8005/sse"}},
+        "server": {"helpdesk": {"url":server_url("helpdesk", "8005", "helpdesk")}},
         "description": "Handles IT helpdesk tasks.",
         "system_prompt": "You're a helpdesk assistant. Log and query IT support tickets.",
     },
     "outlook": {
-        "server": {"outlook": {"url": "http://localhost:8006/sse"}},
+        "server": {"outlook": {"url": server_url("outlook", "8006", "outlook")}},
         "description": "Handles sending and retrieving emails.",
         "system_prompt": "You're an email assistant. Send, search, and manage emails for the user.",
     },
     "calendar": {
-        "server": {"calendar": {"url": "http://localhost:8007/sse"}},
+        "server": {"calendar": {"url": server_url("calendar", "8007", "calendar")}},
         "description": "Manages calendar events and schedules.",
         "system_prompt": "You're a calendar assistant. Manage events, meetings, and schedules.",
     },
     "documentcreation": {
-        "server": {"documentcreation": {"url": "http://localhost:8008/sse"}},
+        "server": {"documentcreation": {"url": server_url("documentcreation", "8008", "documentcreation")}},
         "description": "Handles document creation tasks.",
         "system_prompt": "You're a document creation assistant. Help users create and edit documents.",
     },
