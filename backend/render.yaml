@@ -2,7 +2,7 @@ services:
   - type: web
     name: mcp-host
     env: docker
-    dockerContext: backend
+    dockerContext: .
     startCommand: uvicorn mcp-host.host:app --host 0.0.0.0 --port 8000
     plan: free
     envVars:
@@ -13,7 +13,7 @@ services:
   - type: web
     name: docingestor
     env: docker
-    dockerContext: backend
+    dockerContext: .
     startCommand: python mcp-servers/docingestor.py
     plan: free
     envVars:
@@ -24,7 +24,7 @@ services:
   - type: web
     name: employeedetails
     env: docker
-    dockerContext: backend
+    dockerContext: .
     startCommand: python mcp-servers/employeedetails.py
     plan: free
     envVars:
@@ -35,7 +35,7 @@ services:
   - type: web
     name: helpdesk
     env: docker
-    dockerContext: backend
+    dockerContext: .
     startCommand: python mcp-servers/helpdesk.py
     plan: free
     envVars:
@@ -46,7 +46,7 @@ services:
   - type: web
     name: outlook
     env: docker
-    dockerContext: backend
+    dockerContext: .
     startCommand: python mcp-servers/outlook.py
     plan: free
     envVars:
@@ -57,7 +57,7 @@ services:
   - type: web
     name: calendar
     env: docker
-    dockerContext: backend
+    dockerContext: .
     startCommand: python mcp-servers/calender.py
     plan: free
     envVars:
@@ -68,7 +68,7 @@ services:
   - type: web
     name: documentcreation
     env: docker
-    dockerContext: backend
+    dockerContext: .
     startCommand: python mcp-servers/docgeneration.py
     plan: free
     envVars:
