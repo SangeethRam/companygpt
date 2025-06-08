@@ -2,8 +2,8 @@ services:
   - type: web
     name: mcp-host
     env: docker
-    dockerContext: .
-    dockerfilePath: ./Dockerfile
+    dockerContext: backend
+    dockerfilePath: Dockerfile
     envVars:
       - key: SERVICE_NAME
         value: mcp-host
@@ -13,8 +13,8 @@ services:
   - type: web
     name: docingestor
     env: docker
-    dockerContext: .
-    dockerfilePath: ./Dockerfile
+    dockerContext: backend
+    dockerfilePath: Dockerfile
     envVars:
       - key: SERVICE_NAME
         value: docingestor
@@ -24,8 +24,8 @@ services:
   - type: web
     name: employeedetails
     env: docker
-    dockerContext: .
-    dockerfilePath: ./Dockerfile
+    dockerContext: backend
+    dockerfilePath: Dockerfile
     envVars:
       - key: SERVICE_NAME
         value: employeedetails
@@ -35,8 +35,8 @@ services:
   - type: web
     name: helpdesk
     env: docker
-    dockerContext: .
-    dockerfilePath: ./Dockerfile
+    dockerContext: backend
+    dockerfilePath: Dockerfile
     envVars:
       - key: SERVICE_NAME
         value: helpdesk
@@ -46,8 +46,8 @@ services:
   - type: web
     name: outlook
     env: docker
-    dockerContext: .
-    dockerfilePath: ./Dockerfile
+    dockerContext: backend
+    dockerfilePath: Dockerfile
     envVars:
       - key: SERVICE_NAME
         value: outlook
@@ -57,8 +57,8 @@ services:
   - type: web
     name: calendar
     env: docker
-    dockerContext: .
-    dockerfilePath: ./Dockerfile
+    dockerContext: backend
+    dockerfilePath: Dockerfile
     envVars:
       - key: SERVICE_NAME
         value: calendar
@@ -68,8 +68,8 @@ services:
   - type: web
     name: documentcreation
     env: docker
-    dockerContext: .
-    dockerfilePath: ./Dockerfile
+    dockerContext: backend
+    dockerfilePath: Dockerfile
     envVars:
       - key: SERVICE_NAME
         value: documentcreation
