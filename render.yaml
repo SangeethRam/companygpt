@@ -2,83 +2,76 @@ services:
   - type: web
     name: mcp-host
     env: docker
-    dockerContext: ./backend
-    dockerfilePath: ./backend/Dockerfile
-    command: uvicorn mcp-host.host:app --host 0.0.0.0 --port 8000
+    dockerContext: .
     plan: free
     envVars:
-      - fromGroup: companygpt
+      - key: SERVICE_NAME
+        value: "mcp-host"
       - key: PORT
         value: "8000"
 
   - type: web
     name: docingestor
     env: docker
-    dockerContext: ./backend
-    dockerfilePath: ./backend/Dockerfile
-    command: python mcp-servers/docingestor.py
+    dockerContext: .
     plan: free
     envVars:
-      - fromGroup: companygpt
+      - key: SERVICE_NAME
+        value: "docingestor"
       - key: PORT
         value: "8001"
 
   - type: web
     name: employeedetails
     env: docker
-    dockerContext: ./backend
-    dockerfilePath: ./backend/Dockerfile
-    command: python mcp-servers/employeedetails.py
+    dockerContext: .
     plan: free
     envVars:
-      - fromGroup: companygpt
+      - key: SERVICE_NAME
+        value: "employeedetails"
       - key: PORT
         value: "8004"
 
   - type: web
     name: helpdesk
     env: docker
-    dockerContext: ./backend
-    dockerfilePath: ./backend/Dockerfile
-    command: python mcp-servers/helpdesk.py
+    dockerContext: .
     plan: free
     envVars:
-      - fromGroup: companygpt
+      - key: SERVICE_NAME
+        value: "helpdesk"
       - key: PORT
         value: "8005"
 
   - type: web
     name: outlook
     env: docker
-    dockerContext: ./backend
-    dockerfilePath: ./backend/Dockerfile
-    command: python mcp-servers/outlook.py
+    dockerContext: .
     plan: free
     envVars:
-      - fromGroup: companygpt
+      - key: SERVICE_NAME
+        value: "outlook"
       - key: PORT
         value: "8006"
 
   - type: web
     name: calendar
     env: docker
-    dockerContext: ./backend
-    dockerfilePath: ./backend/Dockerfile
-    command: python mcp-servers/calender.py
+    dockerContext: .
     plan: free
     envVars:
-      - fromGroup: companygpt
+      - key: SERVICE_NAME
+        value: "calendar"
       - key: PORT
         value: "8007"
 
   - type: web
     name: documentcreation
     env: docker
-    dockerContext: ./backend
-    dockerfilePath: ./backend/Dockerfile
-    command: python mcp-servers/docgeneration.py
+    dockerContext: .
     plan: free
     envVars:
-      - fromGroup: companygpt
+      - key: SERVICE_NAME
+        value: "documentcreation"
       - key: PORT
         value: "8008"
