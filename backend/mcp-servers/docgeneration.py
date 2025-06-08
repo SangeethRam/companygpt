@@ -18,7 +18,7 @@ from pydantic import BaseModel
 
 load_dotenv()
 
-GEN_DOC_PORT = os.getenv("GEN_DOC_PORT")
+GEN_DOC_PORT = int(os.getenv("PORT", os.getenv("GEN_DOC_PORT", 8000)))
 mcp = FastMCP("GenerateDocuments", port=GEN_DOC_PORT)
 BASE_URL = os.path.dirname(os.path.abspath(__file__))
 BACKEND_DIR = os.path.abspath(os.path.join(BASE_URL, ".."))

@@ -2,42 +2,73 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Draggable from 'react-draggable';
-import { FiMessageSquare, FiMaximize, FiMinimize } from 'react-icons/fi';
+import { FiMessageSquare, FiMaximize, FiMinimize, FiChevronDown } from 'react-icons/fi';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+
+type AgentProfile = {
+  title: string;
+  description: string;
+  icon?: string;
+};
 
 export default function BotUI() {
   const [open, setOpen] = useState(false);
   const [size, setSize] = useState({ width: 400, height: 300 });
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [panelPosition, setPanelPosition] = useState({ x: 0, y: 0 });
-  const [messages, setMessages] = useState<{ text: string; isUser: boolean }[]>([]);
   const [messageInput, setMessageInput] = useState('');
   const [isThinking, setIsThinking] = useState(false);
-  const [hasStarted, setHasStarted] = useState(false);
+  const [profiles, setProfiles] = useState<AgentProfile[]>([]);
+  const [profile, setProfile] = useState<AgentProfile | null>(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [showInfoPopup, setShowInfoPopup] = useState(false);
+  const [chatHistory, setChatHistory] = useState<Record<string, { text: string; isUser: boolean }[]>>({});
 
   const panelRef = useRef<HTMLDivElement>(null);
   const botButtonRef = useRef<HTMLButtonElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const infoPopupRef = useRef<HTMLDivElement>(null);
+
+  const currentProfileKey = profile?.title || '';
+  const currentMessages = chatHistory[currentProfileKey] || [];
 
   useEffect(() => {
-    const handleResize = () => {
-      if (!panelRef.current) return;
-      const { innerWidth, innerHeight } = window;
-      setSize((prev) => ({
-        width: Math.min(prev.width, innerWidth),
-        height: Math.min(prev.height, innerHeight),
-      }));
+    const fetchProfiles = async () => {
+      try {
+        const res = await fetch('http://localhost:8000/profiles', {
+          credentials: 'include',
+        });
+        const data = await res.json();
+        const profilesData: AgentProfile[] = data.profiles || [];
+        setProfiles(profilesData);
+        if (profilesData.length > 0) {
+          const defaultProfile = profilesData[0];
+          setProfile(defaultProfile);
+          await switchProfile(defaultProfile);
+        }
+      } catch (err) {
+        console.error('Failed to fetch profiles', err);
+      }
     };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    fetchProfiles();
   }, []);
 
   useEffect(() => {
-    const container = document.getElementById('messages-container');
-    if (container) {
-      container.scrollTop = container.scrollHeight;
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [currentMessages, isThinking]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (infoPopupRef.current && !infoPopupRef.current.contains(e.target as Node)) {
+        setShowInfoPopup(false);
+      }
+    };
+    if (showInfoPopup) {
+      document.addEventListener('mousedown', handleClickOutside);
     }
-  }, [messages]);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showInfoPopup]);
 
   useEffect(() => {
     const clearSession = async () => {
@@ -54,7 +85,38 @@ export default function BotUI() {
     clearSession();
   }, []);
 
-  const togglePanel = async() => {
+  
+  const switchProfile = async (newProfile: AgentProfile) => {
+    if (profile?.title !== newProfile.title) {
+      setProfile(newProfile);
+      setShowDropdown(false);
+      try {
+        await fetch(`http://localhost:8000/switch-profile/${encodeURIComponent(newProfile.title)}`, {
+          method: 'POST',
+          headers: {
+            "Content-Type": "application/json",
+            "user-id": "EMP001",
+          },
+          credentials: 'include',
+        });
+      } catch (err) {
+        console.error('Failed to switch profile', err);
+      }
+      if (!chatHistory[newProfile.title]) {
+        setChatHistory((prev) => ({
+          ...prev,
+          [newProfile.title]: [
+            {
+              text: `Hello! 👋 I'm the ${newProfile.title} agent. How can I help you today?`,
+              isUser: false,
+            },
+          ],
+        }));
+      }
+    }
+  };
+
+  const togglePanel = () => {
     if (open) {
       setOpen(false);
       setIsFullscreen(false);
@@ -63,29 +125,11 @@ export default function BotUI() {
       if (rect) {
         const panelW = size.width;
         const panelH = size.height;
-
         const x = Math.max(0, rect.left - panelW + 50);
         const y = Math.max(0, rect.top - panelH - 20);
         setPanelPosition({ x, y });
       }
       setOpen(true);
-
-      if (messages.length === 0) {
-         try {
-            await fetch("http://localhost:8000/start", {
-              method: "GET",
-              credentials: "include",
-            });
-          } catch (err) {
-            console.error("Failed to initialize session", err);
-          }
-        setMessages([
-          {
-            text: "Hello! 👋 I'm your O𝑰 assistant. Ask me anything related to our company, and I’ll do my best (with only minimal eye-rolling). Here are few Suggestions",
-            isUser: false,
-          },
-        ]);
-      }
     }
   };
 
@@ -95,16 +139,13 @@ export default function BotUI() {
     if (isFullscreen) {
       setSize({ width: 400, height: 300 });
     } else {
-      setSize({
-        width: innerWidth - padding * 2,
-        height: innerHeight - padding * 2,
-      });
+      setSize({ width: innerWidth - padding * 2, height: innerHeight - padding * 2 });
       setPanelPosition({ x: padding, y: padding });
     }
     setIsFullscreen(!isFullscreen);
   };
 
-  const onDrag = (e: any, data: any) => {
+  const onDrag = (_e: any, data: any) => {
     const maxX = window.innerWidth - size.width;
     const maxY = window.innerHeight - size.height;
     const x = Math.min(Math.max(0, data.x), maxX);
@@ -112,213 +153,143 @@ export default function BotUI() {
     setPanelPosition({ x, y });
   };
 
-  const suggestions = [
-    "What are our core values?",
-    "Tell me something cool about our latest product.",
-    "Who's the CEO and what do they do?",
-    "How do I get tech support?",
-  ];
-
   const handleSendMessage = async () => {
-    if (messageInput.trim() === '') return;
-    setHasStarted(true);
-
-    setMessages((prevMessages) => [
-      ...prevMessages,
-      { text: messageInput, isUser: true },
-    ]);
+    if (messageInput.trim() === '' || isThinking || !profile) return;
+    const userMessage = { text: messageInput, isUser: true };
+    setChatHistory((prev) => ({
+      ...prev,
+      [currentProfileKey]: [...(prev[currentProfileKey] || []), userMessage],
+    }));
     setMessageInput('');
     setIsThinking(true);
-
     try {
       const res = await fetch('http://localhost:8000/ask', {
         method: 'POST',
-        credentials: "include",
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query: messageInput,
-        }),
+        body: JSON.stringify({ query: messageInput }),
       });
       const data = await res.json();
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        { text: data.response, isUser: false },
-      ]);
+      const botMessage = { text: data.response, isUser: false };
+      setChatHistory((prev) => ({
+        ...prev,
+        [currentProfileKey]: [...(prev[currentProfileKey] || []), botMessage],
+      }));
     } catch {
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        { text: '⚠️ Error getting response.', isUser: false },
-      ]);
+      const errorMessage = { text: '⚠️ Error getting response.', isUser: false };
+      setChatHistory((prev) => ({
+        ...prev,
+        [currentProfileKey]: [...(prev[currentProfileKey] || []), errorMessage],
+      }));
     } finally {
       setIsThinking(false);
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setMessageInput(e.target.value);
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && !isThinking) {
-      handleSendMessage();
-    }
-  };
-
   return (
-    <main className="min-h-screen bg-white text-black relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(circle,black_1px,transparent_1px)] bg-[size:20px_20px] opacity-10 pointer-events-none" />
-
-      <button
-        ref={botButtonRef}
-        onClick={togglePanel}
-        className="fixed bottom-6 right-6 z-50 bg-black text-white p-3 rounded-full shadow-md hover:scale-105 transition-transform"
-      >
-        <FiMessageSquare size={24} />
-      </button>
+    <main className=" text-xs font-mono min-h-screen bg-white text-black relative overflow-hidden">
+      {!open && (
+        <button
+          ref={botButtonRef}
+          onClick={togglePanel}
+          className="fixed bottom-6 right-6 z-50 bg-black text-white p-3 rounded-full shadow-md hover:scale-105 transition-transform"
+        >
+          <FiMessageSquare size={24} />
+        </button>
+      )}
 
       {open && (
-        <Draggable
-          handle=".handle"
-          position={panelPosition}
-          onDrag={onDrag}
-          nodeRef={panelRef as React.RefObject<HTMLElement>}
-        >
+        <Draggable handle=".handle" position={panelPosition} onDrag={onDrag} nodeRef={panelRef as React.RefObject<HTMLElement>}>
           <div
             ref={panelRef}
-            style={{
-              width: size.width,
-              height: size.height,
-              maxWidth: '100vw',
-              maxHeight: '100vh',
-            }}
+            style={{ width: size.width, height: size.height }}
             className="fixed z-40 bg-white border border-black rounded-md shadow-lg overflow-hidden flex flex-col"
           >
-            <div className="handle cursor-move bg-black text-white text-xs font-mono p-1">
-              ⌘ Drag Me
-            </div>
-
-            <div className="absolute inset-0 bg-[linear-gradient(#000_1px,transparent_1px),linear-gradient(90deg,#000_1px,transparent_1px)] bg-[size:40px_40px] opacity-10 pointer-events-none" />
-
-            <div className="flex flex-col w-full h-full">
-              <div className="handle bg-black text-white px-4 py-2 text-sm flex justify-between items-center">
-                <span className="font-mono">O𝑰 Assistant</span>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => setOpen(false)}
-                    className="bg-black text-white p-2 rounded-full"
-                  >
-                    ×
+            {/* <div className="handle cursor-move bg-black text-white text-xs font-mono p-1">⌘ Drag Me</div> */}
+            <div className="flex items-center justify-between bg-black text-white px-4 py-2 text-sm relative">
+              <div className="flex items-center gap-2 relative">
+                {profile && (
+                  <button onClick={() => setShowInfoPopup(true)} className="w-7 h-7 rounded-full text-lg bg-white text-black flex items-center justify-center relative">
+                    {profile.icon || ''}
+                    <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border border-white" title="Online" />
                   </button>
-                  <button
-                    onClick={toggleFullscreen}
-                    className="bg-black text-white p-2 rounded-full"
-                  >
-                    {isFullscreen ? <FiMinimize size={20} /> : <FiMaximize size={20} />}
-                  </button>
-                </div>
-              </div>
-
-              <div id="messages-container" className="flex-1 overflow-y-auto px-4 pt-3 pb-24 space-y-2">
-                {messages.map((message, index) => (
-                  <div
-                    key={index}
-                    className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div
-                      className={`text-xs font-mono px-4 py-2 rounded-xl max-w-[80%] ${
-                        message.isUser ? 'bg-black text-white' : 'bg-gray-200 text-black'
-                      }`}
-                    >
-                      <ReactMarkdown children={message.text} remarkPlugins={[remarkGfm]} />
-                    </div>
-                  </div>
-                ))}
-
-                {isThinking && (
-                  <div className="flex justify-start">
-                    <div className="text-xs font-mono px-4 py-2 rounded-xl bg-gray-100 text-gray-500 animate-pulse">
-                      Thinking...
-                    </div>
-                  </div>
                 )}
-                
-                {/* Suggestions */}
-                {!hasStarted && (
-                  <div className="w-full px-1 flex flex-wrap gap-2 mt-4">
-                    {suggestions.map((s, i) => (
-                      <button
-                        key={i}
-                        onClick={() => setMessageInput(s)}
-                        className="text-xs font-mono text-gray-700 bg-white hover:bg-gray-100 px-3 py-1 rounded-full border border-gray-300 shadow-sm transition-all font-medium"
+                <span className="font-mono">{profile?.title || 'Agent'}</span>
+                <button onClick={() => setShowDropdown(!showDropdown)} className="text-white">
+                  <FiChevronDown size={16} />
+                </button>
+                {showDropdown && (
+                  <div className="absolute top-full mt-1 left-0 bg-white text-black border rounded shadow-md z-50">
+                    {profiles.map((p) => (
+                      <div
+                        key={p.title}
+                        onClick={() => switchProfile(p)}
+                        className="px-3 py-1 hover:bg-gray-100 cursor-pointer text-sm flex items-center gap-2"
                       >
-                        {s}
-                      </button>
+                        <span>{p.icon || ''}</span>
+                        <span>{p.title}</span>
+                      </div>
                     ))}
                   </div>
                 )}
               </div>
 
-
-              <div className="absolute bottom-0 left-0 w-full bg-white border-t border-gray-200 px-4 py-3 flex justify-center items-center gap-2">
-                <input
-                  type="text"
-                  placeholder="Type your message..."
-                  value={messageInput}
-                  onChange={handleInputChange}
-                  onKeyDown={handleKeyPress}
-                  disabled={isThinking}
-                  className="text-xs font-mono w-3/4 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black disabled:opacity-50"
-                />
-                <button
-                  onClick={handleSendMessage}
-                  disabled={isThinking}
-                  className={`text-sm px-4 py-2 rounded-md ${
-                    isThinking
-                      ? 'bg-gray-400 text-white cursor-not-allowed'
-                      : 'bg-black text-white hover:bg-gray-800'
-                  }`}
-                >
-                  Send
+              <div className="flex items-center gap-2">
+                <button onClick={toggleFullscreen} className="bg-black text-white p-1">
+                  {isFullscreen ? <FiMinimize size={16} /> : <FiMaximize size={16} />}
                 </button>
+                <button onClick={() => setOpen(false)} className="bg-black text-white p-1">×</button>
               </div>
             </div>
 
-            {!isFullscreen && (
+            {showInfoPopup && profile && (
               <div
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  const startX = e.clientX;
-                  const startY = e.clientY;
-                  const startWidth = size.width;
-                  const startHeight = size.height;
-
-                  const doResize = (moveEvent: MouseEvent) => {
-                    const newWidth = Math.min(
-                      window.innerWidth,
-                      Math.max(300, startWidth + (moveEvent.clientX - startX))
-                    );
-                    const newHeight = Math.min(
-                      window.innerHeight,
-                      Math.max(200, startHeight + (moveEvent.clientY - startY))
-                    );
-                    setSize({ width: newWidth, height: newHeight });
-                  };
-
-                  const stopResize = () => {
-                    document.removeEventListener('mousemove', doResize);
-                    document.removeEventListener('mouseup', stopResize);
-                  };
-
-                  document.addEventListener('mousemove', doResize);
-                  document.addEventListener('mouseup', stopResize);
-                }}
-                className="absolute right-0 bottom-0 w-4 h-4 bg-black cursor-se-resize z-50"
-              />
+                ref={infoPopupRef}
+                className="absolute top-16 left-4 bg-white border border-gray-300 rounded shadow-lg p-4 text-xs max-w-sm z-50"
+              >
+                <div className="flex justify-between items-center mb-2">
+                  <p className="font-bold">{profile.title} Agent</p>
+                  <button onClick={() => setShowInfoPopup(false)} className="text-gray-500 text-xs">×</button>
+                </div>
+                <p>{profile.description || 'No description available.'}</p>
+              </div>
             )}
+
+            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
+              {currentMessages.map((msg, idx) => (
+                <div
+                  key={idx}
+                  className={`text-sm px-3 py-2 rounded-lg inline-block ${
+                    msg.isUser ? 'bg-blue-100 ml-auto self-end' : 'bg-gray-200 self-start'
+                  }`}
+                  style={{ maxWidth: '80%', wordBreak: 'break-word' }}
+                >
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown>
+                </div>
+              ))}
+              {isThinking && <div className="text-xs text-gray-500 italic">Thinking...</div>}
+              <div ref={messagesEndRef} />
+            </div>
+
+            <div className="p-2 border-t flex flex-col sm:flex-row items-center gap-2">
+              <input
+                value={messageInput}
+                onChange={(e) => setMessageInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
+                className="flex-1 border rounded px-2 py-2 text-sm resize-none w-full"
+                placeholder="Type your message and press Enter..."
+              />
+              <button
+                onClick={handleSendMessage}
+                disabled={messageInput.trim() === '' || isThinking}
+                className="bg-black text-white px-6 py-2 text-sm rounded w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Send
+              </button>
+            </div>
           </div>
         </Draggable>
       )}
     </main>
   );
 }
-

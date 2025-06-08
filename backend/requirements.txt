@@ -16,3 +16,4 @@ python-pptx
 pandas 
 openpyxl
 apscheduler
+supabase

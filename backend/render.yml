@@ -1,0 +1,70 @@
+services:
+  - name: mcp-host
+    type: web
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn mcp-host.host:app --reload --port 8000
+    plan: free
+    envVars:
+      - key: PORT
+        value: "8000"
+
+  - name: docingestor
+    type: web
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python mcp-servers/docingestor.py
+    plan: free
+    envVars:
+      - key: PORT
+        value: "8001"
+
+  - name: employeedetails
+    type: web
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python mcp-servers/employeedetails.py
+    plan: free
+    envVars:
+      - key: PORT
+        value: "8004"
+
+  - name: helpdesk
+    type: web
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python mcp-servers/helpdesk.py
+    plan: free
+    envVars:
+      - key: PORT
+        value: "8005"
+
+  - name: outlook
+    type: web
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python mcp-servers/outlook.py
+    plan: free
+    envVars:
+      - key: PORT
+        value: "8006"
+
+  - name: calendar
+    type: web
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python mcp-servers/calender.py
+    plan: free
+    envVars:
+      - key: PORT
+        value: "8007"
+
+  - name: documentcreation
+    type: web
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python mcp-servers/docgeneration.py
+    plan: free
+    envVars:
+      - key: PORT
+        value: "8008"
