@@ -4,7 +4,7 @@ services:
     env: docker
     dockerContext: ./backend
     dockerfilePath: ./backend/Dockerfile
-    startCommand: uvicorn mcp-host.host:app --host 0.0.0.0 --port 8000
+    command: uvicorn mcp-host.host:app --host 0.0.0.0 --port 8000
     plan: free
     envVars:
       - fromGroup: companygpt
@@ -16,7 +16,7 @@ services:
     env: docker
     dockerContext: ./backend
     dockerfilePath: ./backend/Dockerfile
-    startCommand: python mcp-servers/docingestor.py
+    command: python mcp-servers/docingestor.py
     plan: free
     envVars:
       - fromGroup: companygpt
@@ -28,7 +28,7 @@ services:
     env: docker
     dockerContext: ./backend
     dockerfilePath: ./backend/Dockerfile
-    startCommand: python mcp-servers/employeedetails.py
+    command: python mcp-servers/employeedetails.py
     plan: free
     envVars:
       - fromGroup: companygpt
@@ -40,7 +40,7 @@ services:
     env: docker
     dockerContext: ./backend
     dockerfilePath: ./backend/Dockerfile
-    startCommand: python mcp-servers/helpdesk.py
+    command: python mcp-servers/helpdesk.py
     plan: free
     envVars:
       - fromGroup: companygpt
@@ -52,7 +52,7 @@ services:
     env: docker
     dockerContext: ./backend
     dockerfilePath: ./backend/Dockerfile
-    startCommand: python mcp-servers/outlook.py
+    command: python mcp-servers/outlook.py
     plan: free
     envVars:
       - fromGroup: companygpt
@@ -64,7 +64,7 @@ services:
     env: docker
     dockerContext: ./backend
     dockerfilePath: ./backend/Dockerfile
-    startCommand: python mcp-servers/calender.py
+    command: python mcp-servers/calender.py
     plan: free
     envVars:
       - fromGroup: companygpt
@@ -76,7 +76,7 @@ services:
     env: docker
     dockerContext: ./backend
     dockerfilePath: ./backend/Dockerfile
-    startCommand: python mcp-servers/docgeneration.py
+    command: python mcp-servers/docgeneration.py
     plan: free
     envVars:
       - fromGroup: companygpt
