@@ -3,7 +3,6 @@ services:
     name: mcp-host
     env: docker
     dockerContext: backend
-    dockerfilePath: Dockerfile
     envVars:
       - key: SERVICE_NAME
         value: mcp-host
@@ -14,7 +13,6 @@ services:
     name: docingestor
     env: docker
     dockerContext: backend
-    dockerfilePath: Dockerfile
     envVars:
       - key: SERVICE_NAME
         value: docingestor
@@ -25,7 +23,6 @@ services:
     name: employeedetails
     env: docker
     dockerContext: backend
-    dockerfilePath: Dockerfile
     envVars:
       - key: SERVICE_NAME
         value: employeedetails
@@ -36,7 +33,6 @@ services:
     name: helpdesk
     env: docker
     dockerContext: backend
-    dockerfilePath: Dockerfile
     envVars:
       - key: SERVICE_NAME
         value: helpdesk
@@ -47,7 +43,6 @@ services:
     name: outlook
     env: docker
     dockerContext: backend
-    dockerfilePath: Dockerfile
     envVars:
       - key: SERVICE_NAME
         value: outlook
@@ -58,7 +53,6 @@ services:
     name: calendar
     env: docker
     dockerContext: backend
-    dockerfilePath: Dockerfile
     envVars:
       - key: SERVICE_NAME
         value: calendar
@@ -69,7 +63,6 @@ services:
     name: documentcreation
     env: docker
     dockerContext: backend
-    dockerfilePath: Dockerfile
     envVars:
       - key: SERVICE_NAME
         value: documentcreation
