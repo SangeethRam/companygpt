@@ -1,0 +1,70 @@
+[
+  {
+    "id": "1",
+    "title": "Daily Standup",
+    "start": "2025-06-04T10:00:00",
+    "end": "2025-06-04T10:30:00",
+    "recurrence": "daily"
+  },
+  {
+    "id": "2",
+    "title": "Project Kickoff",
+    "start": "2025-06-05T14:00:00",
+    "end": "2025-06-05T15:00:00"
+  },
+  {
+    "id": "3",
+    "title": "Weekly Team Meeting",
+    "start": "2025-06-06T09:00:00",
+    "end": "2025-06-06T10:00:00",
+    "recurrence": "weekly"
+  },
+  {
+    "id": "4",
+    "title": "Client Presentation",
+    "start": "2025-06-07T11:00:00",
+    "end": "2025-06-07T12:00:00"
+  },
+  {
+    "id": "5",
+    "title": "Sprint Planning",
+    "start": "2025-06-08T13:00:00",
+    "end": "2025-06-08T14:30:00"
+  },
+  {
+    "id": "6",
+    "title": "Code Review Session",
+    "start": "2025-06-09T15:00:00",
+    "end": "2025-06-09T16:00:00"
+  },
+  {
+    "id": "7",
+    "title": "Team Building Activity",
+    "start": "2025-06-10T17:00:00",
+    "end": "2025-06-10T19:00:00"
+  },
+  {
+    "id": "8",
+    "title": "Monthly Retrospective",
+    "start": "2025-06-11T10:30:00",
+    "end": "2025-06-11T12:00:00"
+  },
+  {
+    "id": "2cc603d0-379d-4e85-80ca-35f323002f06",
+    "title": "Vacation",
+    "start": "2024-06-05",
+    "end": "2024-06-15"
+  },
+  {
+    "id": "367f2f97-0c70-46ac-9e47-d31f7b6f064e",
+    "title": "Vacation",
+    "start": "2024-05-05",
+    "end": "2024-05-15"
+  },
+  {
+    "id": "2953bbfd-5185-45dc-ae90-1233fbb67b49",
+    "title": "Review Reimbursement Policy",
+    "start": "2024-05-08T19:00:00",
+    "end": "2024-05-08T19:30:00"
+  }
+]

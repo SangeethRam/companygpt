@@ -1,42 +1,59 @@
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader
-from langchain.vectorstores import Chroma
-# from langchain.embeddings import HuggingFaceEmbeddings
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_community.vectorstores import SupabaseVectorStore
+from supabase.client import create_client
 import os
 
-# Load documents
-docs = []
-INGESTOR_SERVER_PORT = os.getenv("INGESTOR_SERVER_PORT")
-EMBEDDING_MODEL_NAME = os.getenv("EMBEDDING_MODEL_NAME")
+# === Load ENV ===
+from dotenv import load_dotenv
+load_dotenv()
+
+# === ENV Vars ===
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_API_KEY = os.getenv("SUPABASE_KEY")
+SUPABASE_TABLE_NAME ="documents"
+
+# === Paths ===
 BASE_URL = os.path.dirname(os.path.abspath(__file__))
 BACKEND_DIR = os.path.abspath(os.path.join(BASE_URL, ".."))
 PERSIST_DIR = os.path.join(BACKEND_DIR, "data", "embeddings")
-DOCUMENTS_DIR = os.path.join(BACKEND_DIR, "documents", "Policies")
-# EMBEDDING_MODEL = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL_NAME)
+DOCUMENTS_DIR = os.path.join(BACKEND_DIR, "data", "documents", "Policies")
+
+# === Embedding model ===
 EMBEDDING_MODEL = GoogleGenerativeAIEmbeddings(
     model="models/embedding-001",
-    google_api_key=os.getenv("GOOGLE_API_KEY")
+    google_api_key=GOOGLE_API_KEY
 )
 
+# === Supabase Client ===
+supabase_client = create_client(SUPABASE_URL, SUPABASE_API_KEY)
+
+# === Load and process documents ===
+docs = []
 for file in os.listdir(DOCUMENTS_DIR):
     if file.endswith(".pdf"):
         loader = PyPDFLoader(os.path.join(DOCUMENTS_DIR, file))
         pages = loader.load()
-        for page in pages:
-            # Add page metadata
+        for i, page in enumerate(pages):
             page.metadata["source_file"] = file
+            page.metadata["page_number"] = i + 1
             docs.append(page)
 
-# Split text into chunks
+# === Chunk text ===
 text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
 documents = text_splitter.split_documents(docs)
 
-print(f"✅ Loaded {len(documents)} documents from {DOCUMENTS_DIR}")
-print(documents[0].page_content)
-# Load local embedding model
-# model = SentenceTransformer("all-MiniLM-L6-v2")
-# Store in vector DB (Chroma)
-vectorstore = Chroma.from_documents(documents, EMBEDDING_MODEL, persist_directory=PERSIST_DIR)
-vectorstore.persist()
-print("✅ Embeddings stored locally in Chroma DB")
+print(f"✅ Loaded {len(documents)} chunks from PDFs in {DOCUMENTS_DIR}")
+print(f"Example chunk:\n{documents[0].page_content[:200]}...\n")
+
+# === Store in Supabase vector DB ===
+vectorstore = SupabaseVectorStore.from_documents(
+    documents=documents,
+    embedding=EMBEDDING_MODEL,
+    client=supabase_client,
+    table_name=SUPABASE_TABLE_NAME
+)
+
+print("✅ Embeddings stored in Supabase Vector DB")

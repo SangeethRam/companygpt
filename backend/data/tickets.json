@@ -1,0 +1,58 @@
+[
+  {
+    "id": "a9316f73",
+    "user": "Sangeet Ramasamy",
+    "issue": "laptop crash issue regarding broken screen",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2025-06-02T14:46:17.338872"
+  },
+  {
+    "id": "edc9bd63",
+    "user": "Sangeet Ramasamy",
+    "issue": "OS crashes repeatedly. Affected system: Sangeet Ramasamy's laptop.",
+    "priority": "critical",
+    "status": "open",
+    "created_at": "2025-06-02T18:09:52.307822"
+  },
+  {
+    "id": "b1234f89",
+    "user": "sam",
+    "issue": "Unable to connect to company VPN from home network.",
+    "priority": "high",
+    "status": "open",
+    "created_at": "2025-06-03T09:15:22.123456"
+  },
+  {
+    "id": "c5678e21",
+    "user": "sam",
+    "issue": "Email client not syncing new messages.",
+    "priority": "medium",
+    "status": "open",
+    "created_at": "2025-06-03T10:45:11.654321"
+  },
+  {
+    "id": "d9101a34",
+    "user": "Sam Alvin",
+    "issue": "Printer not detected on office network.",
+    "priority": "low",
+    "status": "open",
+    "created_at": "2025-06-03T11:30:45.789012"
+  },
+  {
+    "id": "fe9c599a",
+    "user": "Marion",
+    "issue": "Laptop broken",
+    "priority": "high",
+    "status": "open",
+    "created_at": "2025-06-06T09:17:31.828863"
+  },
+  {
+    "id": "5af679fc",
+    "user": "marion",
+    "issue": "lap broken 2",
+    "priority": "critical",
+    "status": "open",
+    "created_at": "2025-06-06T09:26:49.177687"
+  }
+]
