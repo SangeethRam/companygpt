@@ -1,0 +1,77 @@
+services:
+  - type: web
+    name: mcp-host
+    env: docker
+    dockerContext: backend
+    startCommand: uvicorn mcp-host.host:app --host 0.0.0.0 --port 8000
+    plan: free
+    envVars:
+      - fromGroup: companygpt
+      - key: PORT
+        value: "8000"
+
+  - type: web
+    name: docingestor
+    env: docker
+    dockerContext: backend
+    startCommand: python mcp-servers/docingestor.py
+    plan: free
+    envVars:
+      - fromGroup: companygpt
+      - key: PORT
+        value: "8001"
+
+  - type: web
+    name: employeedetails
+    env: docker
+    dockerContext: backend
+    startCommand: python mcp-servers/employeedetails.py
+    plan: free
+    envVars:
+      - fromGroup: companygpt
+      - key: PORT
+        value: "8004"
+
+  - type: web
+    name: helpdesk
+    env: docker
+    dockerContext: backend
+    startCommand: python mcp-servers/helpdesk.py
+    plan: free
+    envVars:
+      - fromGroup: companygpt
+      - key: PORT
+        value: "8005"
+
+  - type: web
+    name: outlook
+    env: docker
+    dockerContext: backend
+    startCommand: python mcp-servers/outlook.py
+    plan: free
+    envVars:
+      - fromGroup: companygpt
+      - key: PORT
+        value: "8006"
+
+  - type: web
+    name: calendar
+    env: docker
+    dockerContext: backend
+    startCommand: python mcp-servers/calender.py
+    plan: free
+    envVars:
+      - fromGroup: companygpt
+      - key: PORT
+        value: "8007"
+
+  - type: web
+    name: documentcreation
+    env: docker
+    dockerContext: backend
+    startCommand: python mcp-servers/docgeneration.py
+    plan: free
+    envVars:
+      - fromGroup: companygpt
+      - key: PORT
+        value: "8008"
