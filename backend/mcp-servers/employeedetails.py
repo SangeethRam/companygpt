@@ -119,4 +119,4 @@ def list_employees() -> list[str]:
 # --- Run Server ---
 if __name__ == "__main__":
     logger.info("Starting EmployeeDetails MCP server.")
-    mcp.run(transport="streamable-http")
+    mcp.run(transport="sse")

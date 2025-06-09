@@ -41,27 +41,27 @@ AGENTS = {
         "system_prompt": "You're a document assistant. Ingest, search, and retrieve documents for the user.",
     },
     "employee": {
-        "server": {"employeedetails": {"url": server_url("employee", "8004", "employee")}},
+        "server": {"employeedetails": {"url": server_url("employee", "8004", "employeedetails-p4ay")}},
         "description": "Accesses employee details like leave, history, and org info.",
         "system_prompt": "You're an HR assistant. Help users with employee records and policy lookup.",
     },
     "helpdesk": {
-        "server": {"helpdesk": {"url":server_url("helpdesk", "8005", "helpdesk")}},
+        "server": {"helpdesk": {"url":server_url("helpdesk", "8005", "helpdesk-ar35")}},
         "description": "Handles IT helpdesk tasks.",
         "system_prompt": "You're a helpdesk assistant. Log and query IT support tickets.",
     },
     "outlook": {
-        "server": {"outlook": {"url": server_url("outlook", "8006", "outlook")}},
+        "server": {"outlook": {"url": server_url("outlook", "8006", "sendmail-g2a7")}},
         "description": "Handles sending and retrieving emails.",
         "system_prompt": "You're an email assistant. Send, search, and manage emails for the user.",
     },
     "calendar": {
-        "server": {"calendar": {"url": server_url("calendar", "8007", "calendar")}},
+        "server": {"calendar": {"url": server_url("calendar", "8007", "calender-jq3s")}},
         "description": "Manages calendar events and schedules.",
         "system_prompt": "You're a calendar assistant. Manage events, meetings, and schedules.",
     },
     "documentcreation": {
-        "server": {"documentcreation": {"url": server_url("documentcreation", "8008", "documentcreation")}},
+        "server": {"documentcreation": {"url": server_url("documentcreation", "8008", "docgeneration")}},
         "description": "Handles document creation tasks.",
         "system_prompt": "You're a document creation assistant. Help users create and edit documents.",
     },
