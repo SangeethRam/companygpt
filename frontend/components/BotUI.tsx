@@ -5,6 +5,9 @@ import Draggable from 'react-draggable';
 import { FiMessageSquare, FiMaximize, FiMinimize, FiChevronDown } from 'react-icons/fi';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { useMemo } from 'react';
+import { useCallback } from 'react';
+import { DraggableEvent, DraggableData } from 'react-draggable';
 
 type AgentProfile = {
   title: string;
@@ -31,7 +34,9 @@ export default function BotUI() {
   const infoPopupRef = useRef<HTMLDivElement>(null);
 
   const currentProfileKey = profile?.title || '';
-  const currentMessages = chatHistory[currentProfileKey] || [];
+  const currentMessages = useMemo(() => {
+    return chatHistory[currentProfileKey] || [];
+  }, [chatHistory, currentProfileKey]);
 
   useEffect(() => {
     const fetchProfiles = async () => {
@@ -86,7 +91,7 @@ export default function BotUI() {
   }, []);
 
   
-  const switchProfile = async (newProfile: AgentProfile) => {
+  const switchProfile = useCallback(async (newProfile: AgentProfile) => {
     if (profile?.title !== newProfile.title) {
       setProfile(newProfile);
       setShowDropdown(false);
@@ -114,7 +119,7 @@ export default function BotUI() {
         }));
       }
     }
-  };
+  }, [profile?.title, chatHistory]);
 
   const togglePanel = () => {
     if (open) {
@@ -145,7 +150,7 @@ export default function BotUI() {
     setIsFullscreen(!isFullscreen);
   };
 
-  const onDrag = (_e: any, data: any) => {
+  const onDrag = (_e: DraggableEvent, data: DraggableData) => {
     const maxX = window.innerWidth - size.width;
     const maxY = window.innerHeight - size.height;
     const x = Math.min(Math.max(0, data.x), maxX);
