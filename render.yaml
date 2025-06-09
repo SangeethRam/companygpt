@@ -1,0 +1,70 @@
+services:
+  - type: web
+    name: mcp-host
+    env: docker
+    dockerContext: backend
+    envVars:
+      - key: SERVICE_NAME
+        value: mcp-host
+      - key: PORT
+        value: "8000"
+
+  - type: web
+    name: docingestor
+    env: docker
+    dockerContext: backend
+    envVars:
+      - key: SERVICE_NAME
+        value: docingestor
+      - key: PORT
+        value: "8001"
+
+  - type: web
+    name: employeedetails
+    env: docker
+    dockerContext: backend
+    envVars:
+      - key: SERVICE_NAME
+        value: employeedetails
+      - key: PORT
+        value: "8004"
+
+  - type: web
+    name: helpdesk
+    env: docker
+    dockerContext: backend
+    envVars:
+      - key: SERVICE_NAME
+        value: helpdesk
+      - key: PORT
+        value: "8005"
+
+  - type: web
+    name: outlook
+    env: docker
+    dockerContext: backend
+    envVars:
+      - key: SERVICE_NAME
+        value: outlook
+      - key: PORT
+        value: "8006"
+
+  - type: web
+    name: calendar
+    env: docker
+    dockerContext: backend
+    envVars:
+      - key: SERVICE_NAME
+        value: calendar
+      - key: PORT
+        value: "8007"
+
+  - type: web
+    name: documentcreation
+    env: docker
+    dockerContext: backend
+    envVars:
+      - key: SERVICE_NAME
+        value: documentcreation
+      - key: PORT
+        value: "8008"

@@ -8,5 +8,12 @@ mcp_use
 FastAPI
 sentence-transformers
 pypdf
-chromadb
+# chromadb
 fastembed
+playwright
+python-docx
+python-pptx
+pandas 
+openpyxl
+apscheduler
+supabase

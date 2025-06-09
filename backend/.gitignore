@@ -18,4 +18,5 @@ __pycache__/
 Thumbs.db
 
 # Data
-data/
+data/edge-user-data
+data/embeddings
