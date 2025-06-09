@@ -34,6 +34,7 @@ export default function BotUI() {
   const infoPopupRef = useRef<HTMLDivElement>(null);
 
   const currentProfileKey = profile?.title || '';
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
   const currentMessages = useMemo(() => {
     return chatHistory[currentProfileKey] || [];
   }, [chatHistory, currentProfileKey]);
@@ -41,7 +42,7 @@ export default function BotUI() {
   useEffect(() => {
     const fetchProfiles = async () => {
       try {
-        const res = await fetch('http://localhost:8000/profiles', {
+        const res = await fetch(`${API_BASE_URL}/profiles`, {
           credentials: 'include',
         });
         const data = await res.json();
@@ -78,7 +79,7 @@ export default function BotUI() {
   useEffect(() => {
     const clearSession = async () => {
       try {
-        await fetch("http://localhost:8000/clear-session", {
+        await fetch(`${API_BASE_URL}/clear-session`, {
           method: "POST",
           credentials: "include",
         });
@@ -96,7 +97,7 @@ export default function BotUI() {
       setProfile(newProfile);
       setShowDropdown(false);
       try {
-        await fetch(`http://localhost:8000/switch-profile/${encodeURIComponent(newProfile.title)}`, {
+        await fetch(`${API_BASE_URL}/switch-profile/${encodeURIComponent(newProfile.title)}`, {
           method: 'POST',
           headers: {
             "Content-Type": "application/json",
@@ -168,7 +169,7 @@ export default function BotUI() {
     setMessageInput('');
     setIsThinking(true);
     try {
-      const res = await fetch('http://localhost:8000/ask', {
+      const res = await fetch(`${API_BASE_URL}/ask`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
