@@ -60,8 +60,11 @@ def get_employee_all_details(id: Optional[str] = None, name: Optional[str] = Non
         logger.warning(f"Employee not found with id '{id}' or name '{name}'.")
         return f"❌ Employee not found with id '{id}' or name '{name}'."
     
-    logger.info(f"Returning details for employee: {emp['name']}")
-    return f"Name: {emp['name']}\nAge: {emp['age']} \nEmail: {emp['email']}\n"
+    logger.info(f"Returning details for employee: {emp.items()}")
+    # details = [f"{key.replace('_', ' ').title()}: {value}" for key, value in emp.items()]
+    # return "\n".join(details)
+
+    return f"Name: {emp['name']}\nAge: {emp['age']} \nEmail: {emp['email']}\n Manger Name:{emp['manager_name']}\n Manager Email: {emp['manager_email']} \n Company: {emp['company']}\n Joining Data: {emp['join_date']}\n"
 
 @mcp.tool(
     name="Get_Employee_Leave_Details",

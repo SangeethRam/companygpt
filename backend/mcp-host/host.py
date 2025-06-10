@@ -71,6 +71,12 @@ AGENTS = {
 }
 
 DEFAULT_PROFILES = [
+     {
+        "title": "Master Assistant",
+        "description": "Handles all employee queries and document ingestion and Supports helpdesk, calendar, and outlook functionalities",
+        "servers": ["employee", "docingestor", "helpdesk", "calendar", "outlook", "documentcreation"],
+        "icon": "🧠"
+    },
     {
         "title": "HR Assistant",
         "description": "Handles employee queries and document ingestion",
