@@ -14,6 +14,12 @@ from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
 from typing import Dict, List
 from pydantic import BaseModel
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import landscape, A4
+from reportlab.lib import colors
+import random
+import string
+from datetime import datetime, timedelta
 
 
 load_dotenv()
@@ -31,9 +37,19 @@ os.makedirs(TEMP_DIR, exist_ok=True)
 # Metadata store to map content hashes to filenames
 generated_docs = {}
 
+ORG_NAME = "ORION INNOVATION"
+CERT_PREFIX = "OI"
+DEFAULT_MARGIN = 40
+
 class Slide(BaseModel):
     layout: int
     placeholders: List[str]
+
+class CertificateData(BaseModel):
+    student_name: str
+    program_name: str
+    issue_date: str
+    certificate_id: str = None
 
 # --- Helpers ---
 
@@ -62,12 +78,24 @@ def combine_placeholders(slides: List[Slide]) -> List[Dict]:
         })
     return structured
 
+def generate_pdf_filename(base_name: str) -> str:
+    timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
+    safe = re.sub(r"[^\w\d-]+", "_", base_name)[:30]
+    return os.path.join(TEMP_DIR, f"Bonafide_{safe}_{timestamp}.pdf")
+
+def generate_certificate_id() -> str:
+    suffix = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+    return f"{CERT_PREFIX}-{datetime.now().strftime('%Y%m%d')}-{suffix}"
+
+
 # --- Prompts ---
 @mcp.prompt("""
 When the user asks to generate a document, choose the appropriate tool:
 - Use `Generate_PPT` for presentations. Format slides as: [{"layout": 0, "placeholders": ["Title", "Date"]}, {"layout": 1, "placeholders": ["Title", "Content"]}
 - Use `Generate_Word_Doc` for narrative or textual content. Pass the text as a single string.
 - Use `Generate_Excel` for tabular data. Accept a CSV string as input.
+- Use `Generate_Bonafide_Certificate_PDF` when they need a Bonafide Certificate: 
+  pass a JSON with `student_name`, `program_name`, `issue_date`, and optional `certificate_id`.
 
 Always include relevant structure to make the tool call successful.
 """)
@@ -159,6 +187,103 @@ async def generate_ppt(slides: List[Slide]) -> str:
 
     generated_docs[content_hash] = file_path
     return file_path
+
+def generate_certificate_id(prefix="ORION") -> str:
+    date_part = datetime.now().strftime("%Y%m%d")
+    rand_part = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+    return f"{prefix}-{date_part}-{rand_part}"
+
+@mcp.tool(
+    name="Generate_Bonafide_Certificate_PDF",
+    description="Generate a Bonafide/Employment Certificate for Orion Innovation."
+)
+async def generate_certificate_pdf(data: CertificateData) -> str:
+    today = datetime.now()
+    next_month = (today.replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+    data.issue_date = data.issue_date or today.strftime("%d-%m-%Y")
+    data.certificate_id = data.certificate_id or generate_certificate_id()
+
+    key_string = f"{data.student_name}|{data.program_name}|{data.issue_date}|{data.certificate_id}"
+    content_hash = hashlib.sha256(key_string.encode("utf-8")).hexdigest()
+    if content_hash in generated_docs:
+        return generated_docs[content_hash]
+
+    pdf_path = generate_pdf_filename(data.student_name)
+    c = canvas.Canvas(pdf_path, pagesize=landscape(A4))
+    width, height = landscape(A4)
+    margin = 50
+
+    # Borders
+    c.setStrokeColor(colors.HexColor("#000000"))
+    c.setLineWidth(3)
+    c.rect(margin, margin, width - 2 * margin, height - 2 * margin)
+
+    c.setStrokeColor(colors.lightgrey)
+    c.setLineWidth(1)
+    c.rect(margin + 10, margin + 10, width - 2 * (margin + 10), height - 2 * (margin + 10))
+
+    # Header
+    c.setFont("Helvetica-Bold", 22)
+    c.setFillColor(colors.HexColor("#000000"))
+    c.drawCentredString(width / 2, height - margin - 30, "Orion Innovation")
+
+    c.setFont("Helvetica", 12)
+    c.setFillColor(colors.black)
+    c.drawCentredString(width / 2, height - margin - 50, "Global Technology Services | www.orioninc.com")
+
+    # Title
+    c.setFont("Helvetica-Bold", 26)
+    c.setFillColor(colors.black)
+    c.drawCentredString(width / 2, height - margin - 100, "BONAFIDE CERTIFICATE")
+
+    # Body Content
+    content_text = (
+        f"This is to certify that Mr./Ms. {data.student_name} is working as a "
+        f"in Orion Innovation. This certificate is issued for his {data.program_name} related purposes.\n\n"
+        f"This is valid till: {next_month.strftime('%d-%m-%Y')}"
+    )
+
+    c.setFont("Helvetica", 14)
+    text_obj = c.beginText()
+    text_obj.setTextOrigin(margin + 70, height - margin - 150)
+    text_obj.setLeading(22)
+    max_width = width - 2 * (margin + 70)
+
+    for line in content_text.split("\n"):
+        words = line.split()
+        buffer = ""
+        for word in words:
+            test_line = f"{buffer} {word}".strip()
+            if c.stringWidth(test_line, "Helvetica", 14) < max_width:
+                buffer = test_line
+            else:
+                text_obj.textLine(buffer)
+                buffer = word
+        if buffer:
+            text_obj.textLine(buffer)
+    c.drawText(text_obj)
+
+    # Signature
+    c.setFont("Helvetica", 12)
+    c.drawString(width - margin - 220, margin + 60, "HR Manager – Orion Innovation")
+    c.drawString(width - margin - 220, margin + 80, "__________________________")
+
+    # Certificate ID
+    c.setFont("Helvetica-Oblique", 10)
+    c.drawString(margin + 10, margin + 40, f"Certificate ID: {data.certificate_id}")
+
+    # Watermark (bounded within border)
+    c.saveState()
+    c.setFont("Helvetica-Bold", 40)
+    c.setFillGray(0.90, 0.5)
+    c.translate(width / 2, height / 2)
+    c.rotate(45)
+    c.drawCentredString(0, 0, "ORION INNOVATION")
+    c.restoreState()
+    c.save()
+
+    generated_docs[content_hash] = pdf_path
+    return pdf_path
 
 
 @mcp.tool(name="Cleanup_Temp_Files", description="Delete all generated temporary document files")

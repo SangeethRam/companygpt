@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# Usage: ./render-services.sh start|stop
+# Usage: ./render-services.sh resume|suspend
 
 API_KEY="rnd_oRMEzBrgOEzMJ9knPWAjMIfQnDXb"
 ACTION=$1
 
 # Validate input
 if [[ "$ACTION" != "resume" && "$ACTION" != "suspend" ]]; then
-  echo "❌ Invalid action. Use: start or stop"
+  echo "❌ Invalid action. Use: resume or suspend"
   exit 1
 fi
 
@@ -24,8 +24,24 @@ SERVICE_IDS=(
 
 for SERVICE_ID in "${SERVICE_IDS[@]}"; do
   echo "⏳ $ACTION $SERVICE_ID ..."
+
+  # Send suspend or resume command
   curl -s -X POST "https://api.render.com/v1/services/$SERVICE_ID/$ACTION" \
     -H "Authorization: Bearer $API_KEY" \
     -H "Accept: application/json"
-  echo -e "\n✅ $SERVICE_ID $ACTION complete"
+
+  # If resuming, also trigger deploy to start it
+  if [[ "$ACTION" == "resume" ]]; then
+    curl -s -X POST "https://api.render.com/v1/services/$SERVICE_ID/deploys" \
+      -H "Authorization: Bearer $API_KEY" \
+      -H "Accept: application/json" \
+      -H "Content-Type: application/json" \
+      -d '{"clearCache": false}'
+
+    echo "🚀 $SERVICE_ID resumed & deploy triggered"
+  else
+    echo "🛑 $SERVICE_ID suspended"
+  fi
+
+  echo ""
 done
