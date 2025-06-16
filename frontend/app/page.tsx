@@ -1,11 +1,17 @@
-// app/page.tsx
+// // app/page.tsx
 
-import BotUI from '@/components/BotUI';  // Using the @ alias
+import { redirect } from 'next/navigation';
 
-export default function HomePage() {
-  return (
-    <main>
-      <BotUI />
-    </main>
-  );
+export default function Home() {
+  redirect('/chat');
 }
+
+// import BotUI from '@/components/BotUI';  // Using the @ alias
+
+// export default function HomePage() {
+//   return (
+//     <main>
+//       <BotUI />
+//     </main>
+//   );
+// }
