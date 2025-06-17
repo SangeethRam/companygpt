@@ -89,16 +89,31 @@ def generate_certificate_id() -> str:
 
 
 # --- Prompts ---
-@mcp.prompt("""
-When the user asks to generate a document, choose the appropriate tool:
-- Use `Generate_PPT` for presentations. Format slides as: [{"layout": 0, "placeholders": ["Title", "Date"]}, {"layout": 1, "placeholders": ["Title", "Content"]}
-- Use `Generate_Word_Doc` for narrative or textual content. Pass the text as a single string.
-- Use `Generate_Excel` for tabular data. Accept a CSV string as input.
-- Use `Generate_Bonafide_Certificate_PDF` when they need a Bonafide Certificate: 
-  pass a JSON with `student_name`, `program_name`, `issue_date`, and optional `certificate_id`.
+@mcp.prompt()
+def document_generation_prompt(query: str) -> str:
+    return f"""
+When the user asks to generate a document or presentation, first use `Search_doc` to gather relevant content if it's not already provided.
 
-Always include relevant structure to make the tool call successful.
-""")
+- If the user provides only a topic (e.g. "Software Code Usage Policy"), use `Search_doc` with that topic as the query to retrieve structured content.
+
+- After retrieving the content with `Search_doc`, depending on the user’s request:
+  - Use `Generate_PPT` to create a presentation. 
+    Format slides like:
+      [
+        {{"layout": 0, "placeholders": ["Title", "Subtitle"]}},
+        {{"layout": 1, "placeholders": ["Slide Title", "Slide Content"]}},
+        ...
+      ]
+  - Use `Generate_Word_Doc` to create a narrative report or description. Pass the text as a single string.
+  - Use `Generate_Excel` if the content is tabular. Convert it to CSV first.
+  - Use `Generate_Bonafide_Certificate_PDF` only when a Bonafide Certificate is requested, with `student_name`, `program_name`, etc.
+
+Avoid asking the user for more content unless the topic is ambiguous or `Search_doc` returns no useful results.
+
+Goal: Always attempt to generate full content automatically starting with `Search_doc`.
+
+User query: {query}
+"""
 
 # --- Tools ---
 
@@ -284,7 +299,6 @@ async def generate_certificate_pdf(data: CertificateData) -> str:
 
     generated_docs[content_hash] = pdf_path
     return pdf_path
-
 
 @mcp.tool(name="Cleanup_Temp_Files", description="Delete all generated temporary document files")
 async def cleanup_temp_files() -> str:

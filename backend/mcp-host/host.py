@@ -9,6 +9,7 @@ import os
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 from mcp_use import MCPAgent, MCPClient, set_debug
+from datetime import datetime
 
 load_dotenv(dotenv_path=Path(__file__).parent.parent / ".env")
 set_debug(2)
@@ -105,6 +106,11 @@ You specialize in specific areas of internal support depending on the tools avai
 
 Use the following user_id : {user_id} to fetch user details from your employee server during this session do call the tool and respond with the user details."
 
+##Today's Date: {date_time} 
+
+Use this date and time to respond to the user queries. If any query is related to date and time without  any year, use the current year.
+
+
 ## 🧰 Tools at Your Disposal
 
 You have access to the following tools for this session:
@@ -112,6 +118,7 @@ You have access to the following tools for this session:
 {tool_descriptions}
 
 Use them confidently. Assume they are working and available.
+
 
 ---
 
@@ -154,12 +161,30 @@ Follow this approach for each query:
 ✅ Use the **calendar** tool to fetch tomorrow's schedule  
 ✅ Combine both results into a helpful summary
 
+When the user asks to generate a document or presentation, first use `Search_doc` to gather relevant content if it's not already provided.
+
+- If the user provides only a topic (e.g. "Software Code Usage Policy"), use `Search_doc` with that topic as the query to retrieve structured content.
+
+- After retrieving the content with `Search_doc`, depending on the user’s request:
+  - Use `Generate_PPT` to create a presentation. 
+    Format slides like:
+      [
+        {{"layout": 0, "placeholders": ["Title", "Software Code Usage Policy"]}},
+        {{"layout": 1, "placeholders": ["Slide Title", "Slide Content"]}},
+        {{"layout": 0, "placeholders": ["Slide Title", "Slide Content"]}},
+        ...
+      ]
+
+    -Add more slides as needed and ensure the Slide Content fills the page.
 ---
 
 ## 💡 Philosophy
 
 You’re an assistant built to **think clearly, act quickly, and be genuinely helpful**.  
 You adapt based on the tools you have — be sharp, supportive, and solution-focused. 💪🎯
+
+#Response Structure
+Respond in Markdown format
 """
 
 @app.on_event("startup")
@@ -250,9 +275,11 @@ async def switch_profile(
         user_info_snippet = "\n\n## 👤 User Context\nUnknown user"
 
     # Final system prompt
+    current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     final_prompt = custom_prompt_template \
         .replace("{tool_descriptions}", tool_descriptions) \
         .replace("{user_id}", user_id or "unknown") \
+        .replace("{date_time}", current_datetime) \
         + user_info_snippet
 
     # Initialize MCP client and agent
